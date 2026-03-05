@@ -1,0 +1,517 @@
+---
+title: "Blog Post Code Reproduction"
+author: "Aman Kashyap"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    css: !expr system.file("rmarkdown/templates/html_vignette/resources/vignette.css", package = "rmarkdown")
+    theme: null
+    self_contained: true
+---
+
+<style>
+body {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 40px;
+}
+</style>
+
+```{r setup, include=FALSE}
+# Force CPU execution to prevent CUDA mismatches during typical usage tests
+Sys.setenv(CUDA_VISIBLE_DEVICES = "-1")
+Sys.setenv(TORCH_DEVICE = "cpu")
+
+knitr::opts_chunk$set(echo = TRUE, collapse = FALSE, 
+                      fig.width = 12, fig.height = 5, dpi = 120, out.width = "100%")
+
+library(torch)
+```
+
+# Introduction
+This is part 2 of the GSoC 2026 easy test for mlr3torchAUM package. This document reproduces code from tdhock's blog post on stratified batch sampling for imbalanced classification. The objective is to verify reproducibility by re-running all code and explicitly testing consistency.
+
+Blog post: https://tdhock.github.io/blog/2025/mlr3torch-batch-samplers/
+
+Dataset: Sonar (111 M, 97 R labels) - different from vignette's spam dataset
+
+Note: This document focuses on code execution and consistency verification. For detailed explanations of concepts, refer to the original blog post.
+
+# 1. Dataset: Sonar Classification
+
+```{r}
+sonar_task <- mlr3::tsk("sonar")
+(count_tab <- table(sonar_task$data(sonar_task$row_ids, "Class")$Class))
+```
+
+Validation:
+
+```{r}
+expected_counts <- c(111L, 97L)
+stopifnot(identical(sort(as.integer(count_tab)), sort(expected_counts)))
+stopifnot(all(c("M", "R") %in% names(count_tab)))
+```
+
+```{r}
+count_tab/sum(count_tab)
+```
+
+# 2. Creating Imbalance
+
+```{r}
+sonar_task$filter(208:86)
+(count_tab <- table(sonar_task$data(sonar_task$row_ids, "Class")$Class))
+```
+
+```{r}
+count_tab/sum(count_tab)
+```
+
+Validation:
+
+```{r}
+expected_counts_filtered <- c(111L, 12L)
+stopifnot(identical(sort(as.integer(count_tab)), sort(expected_counts_filtered)))
+stopifnot(all(c("M", "R") %in% names(count_tab)))
+```
+
+```{r}
+sonar_task$col_roles$stratum <- "Class"
+```
+
+# 3. Custom Stratified Batch Sampler
+
+```{r}
+library(data.table)
+batch_sampler_stratified <- function(min_samples_per_stratum, shuffle=TRUE){
+  torch::sampler(
+    "StratifiedSampler",
+    initialize = function(data_source) {
+      self$data_source <- data_source
+      TSK <- data_source$task
+      self$stratum <- TSK$col_roles$stratum
+      if(length(self$stratum)==0)stop(TSK$id, "task missing stratum column role")
+      self$stratum_dt <- data.table(
+        TSK$data(cols=self$stratum),
+        row.id=1:TSK$nrow)
+      self$set_batch_list()
+    },
+    set_batch_list = function() {
+      get_indices <- if(shuffle){
+        function(n)torch::as_array(torch::torch_randperm(n))+1L
+      }else{
+        function(n)1:n
+      }
+      index_dt <- self$stratum_dt[
+        get_indices(.N)
+      ][
+      , i.in.stratum := 1:.N, by=c(self$stratum)
+      ][]
+      count_dt <- index_dt[, .(
+        max.i=max(i.in.stratum)
+      ), by=c(self$stratum)][order(max.i)]
+      count_min <- count_dt$max.i[1]
+      num_batches <- max(1, count_min %/% min_samples_per_stratum)
+      max_samp <- num_batches * min_samples_per_stratum
+      index_dt[
+      , n.samp := i.in.stratum/max(i.in.stratum)*max_samp
+      , by=c(self$stratum)
+      ][
+      , batch.i := ceiling(n.samp/min_samples_per_stratum)
+      ][]
+      save_list$count[[paste("epoch", length(save_list$count)+1)]] <<- dcast(
+        index_dt,
+        batch.i ~ Class,
+        list(length, indices=function(x)paste(x, collapse=",")),
+        value.var="row.id"
+      )[
+      , labels := index_dt[, paste(Class, collapse=""), by=batch.i][order(batch.i), V1]
+      ]
+      self$batch_list <- split(index_dt$row.id, index_dt$batch.i)
+      self$batch_sizes <- sapply(self$batch_list, length)
+      self$batch_size_tab <- sort(table(self$batch_sizes))
+      self$batch_size <- as.integer(names(self$batch_size_tab)[length(self$batch_size_tab)])
+    },
+    .iter = function() {
+      batch.i <- 0
+      function() {
+        if (batch.i < length(self$batch_list)) {
+          batch.i <<- batch.i + 1L
+          indices <- self$batch_list[[batch.i]]
+          save_list$indices[[length(save_list$indices)+1]] <<- indices
+          if (batch.i == length(self$batch_list)) {
+            self$set_batch_list()
+          }
+          return(indices)
+        }
+        coro::exhausted()
+      }
+    },
+    .length = function() {
+      length(self$batch_list)
+    }
+  )
+}
+```
+
+# 4. Learner and Loss
+
+```{r}
+save_list <- list()
+nn_bce_with_logits_loss_save <- torch::nn_module(
+  "nn_print_loss",
+  inherit = torch::nn_mse_loss,
+  initialize = function() {
+    super$initialize()
+    self$bce <- torch::nn_bce_with_logits_loss()
+  },
+  forward = function(input, target) {
+    save_list$target[[length(save_list$target)+1]] <<- target
+    self$bce(input, target)
+  }
+)
+```
+
+```{r}
+set.seed(4)
+mlp_learner <- mlr3torch::LearnerTorchMLP$new(
+  task_type="classif",
+  loss=nn_bce_with_logits_loss_save)
+mlp_learner$predict_type <- "prob"
+```
+
+```{r}
+mlp_learner$param_set$set_values(
+  epochs=1,
+  p=0, # dropout probability.
+  batch_size=1, # ignored.
+  batch_sampler=batch_sampler_stratified(min_samples_per_stratum = 1))
+```
+
+Validation:
+
+```{r}
+stopifnot(identical(mlp_learner$param_set$values$epochs, 1L))
+stopifnot(identical(mlp_learner$param_set$values$batch_size, 1L))
+```
+
+# 5. Learner Training
+
+```{r}
+save_list <- list()
+mlp_learner$train(sonar_task)
+names(save_list)
+```
+
+```{r}
+save_list$count
+```
+
+Validation:
+
+```{r}
+first_epoch <- save_list$count[[1]]
+stopifnot(all(first_epoch$row.id_length_R >= 1L))
+stopifnot(all(first_epoch$row.id_length_M + first_epoch$row.id_length_R >= 2L))
+```
+
+# 6. Double-check correct indices and labels
+
+```{r}
+sonar_dataset <- mlp_learner$dataset(sonar_task)
+for(batch.i in 1:length(save_list$target)){
+  index_vec <- save_list$indices[[batch.i]]
+  target_tensor <- save_list$target[[batch.i]]
+  target_vec <- torch::as_array(target_tensor)
+  label_vec <- names(count_tab)[ifelse(target_vec==1, 1, 2)]
+  data.table::set(
+    save_list$count[["epoch 1"]],
+    i=batch.i,
+    j="check",
+    value=paste(label_vec, collapse=""))
+  stopifnot(all.equal(
+    target_tensor$flatten(),
+    sonar_dataset$.getbatch(index_vec)$y$flatten()
+  ))
+}
+save_list$count[["epoch 1"]]
+```
+
+Validation:
+
+```{r}
+stopifnot(identical(save_list$count[["epoch 1"]]$labels, save_list$count[["epoch 1"]]$check))
+```
+
+# 7. Varying Batch Size
+
+```{r}
+label_count_dt_list <- list()
+for(min_samples_per_stratum in c(1:7,20)){
+  mlp_learner$param_set$set_values(
+    epochs=1,
+    p=0, # dropout probability.
+    batch_size=1, # ignored.
+    batch_sampler=batch_sampler_stratified(min_samples_per_stratum = min_samples_per_stratum))
+  save_list <- list()
+  mlp_learner$train(sonar_task)
+  label_count_dt_list[[paste0(
+    "min_samples_per_stratum=", min_samples_per_stratum
+  )]] <- save_list$count[["epoch 1"]][, data.table(
+    batch.i,
+    row.id_length_M,
+    row.id_length_R,
+    batch_size=row.id_length_M+row.id_length_R)]
+}
+label_count_dt_list
+```
+
+# 8. shuffle Parameter
+
+```{r}
+shuffle_list <- list()
+for(shuffle in c(TRUE, FALSE)){
+  mlp_learner$param_set$set_values(
+    epochs=1,
+    p=0, # dropout probability.
+    batch_size=1, # ignored.
+    batch_sampler=batch_sampler_stratified(min_samples_per_stratum = 1, shuffle = shuffle))
+  save_list <- list()
+  mlp_learner$train(sonar_task)
+  shuffle_list[[paste0("shuffle=", shuffle)]] <- save_list$count
+}
+shuffle_list
+```
+
+Validation:
+
+```{r}
+# shuffle=TRUE: expect different indices across epochs
+true_epoch1 <- shuffle_list[["shuffle=TRUE"]][[1]]$row.id_indices_M
+true_epoch2 <- shuffle_list[["shuffle=TRUE"]][[2]]$row.id_indices_M
+stopifnot(!identical(true_epoch1, true_epoch2))
+
+# shuffle=FALSE: expect identical ordering across epochs
+false_epoch1 <- shuffle_list[["shuffle=FALSE"]][[1]]$row.id_indices_M
+false_epoch2 <- shuffle_list[["shuffle=FALSE"]][[2]]$row.id_indices_M
+stopifnot(identical(false_epoch1, false_epoch2))
+```
+
+# 9. Randomness Control Tests
+This section answers: "Are they consistent?"
+
+## 9.1 Random Weight Initialization
+
+```{r}
+param_list <- list()
+set.seed(5) # controls what is used as the torch random seed (if param not set).
+for(set_seed in c(0:1)){
+  for(rep_i in 1:2){
+    L <- mlr3torch::LearnerTorchMLP$new(task_type="classif")
+    L$param_set$set_values(epochs=0, batch_size=10)
+    if(set_seed)L$param_set$values$seed <- 1 # torch random seed.
+    L$train(sonar_task)
+    param_list[[sprintf("set_seed=%d rep=%d", set_seed, rep_i)]] <- unlist(lapply(
+      L$model$network$parameters, torch::as_array))
+  }
+}
+weight_matrix <- do.call(rbind, param_list)
+weight_matrix[, 1:5]
+```
+
+Consistency Check 1:
+
+```{r}
+rep1_weights <- weight_matrix["set_seed=1 rep=1", 1:5]
+rep2_weights <- weight_matrix["set_seed=1 rep=2", 1:5]
+stopifnot(identical(rep1_weights, rep2_weights))
+stopifnot(!identical(weight_matrix["set_seed=0 rep=1", 1:5], weight_matrix["set_seed=0 rep=2", 1:5]))
+```
+
+## 9.2 Batch Order Randomness
+
+```{r}
+param_list <- list()
+set.seed(5) # controls what is used as the torch random seed (if param not set).
+for(set_batch_sampler in c(0:1)){
+  for(rep_i in 1:2){
+    L <- mlr3torch::LearnerTorchMLP$new(task_type="classif")
+    L$param_set$set_values(epochs=1, batch_size=10, seed=1)
+    if(set_batch_sampler)L$param_set$values$batch_sampler <- batch_sampler_stratified(1)
+    L$train(sonar_task)
+    param_list[[sprintf("set_batch_sampler=%d rep=%d", set_batch_sampler, rep_i)]] <- unlist(lapply(
+      L$model$network$parameters, torch::as_array))
+  }
+}
+weight_matrix2 <- do.call(rbind, param_list)
+weight_matrix2[, 1:5]
+```
+
+Consistency Check 2:
+
+```{r}
+rep1_standard <- weight_matrix2["set_batch_sampler=0 rep=1", 1:5]
+rep2_standard <- weight_matrix2["set_batch_sampler=0 rep=2", 1:5]
+rep1_stratified <- weight_matrix2["set_batch_sampler=1 rep=1", 1:5]
+rep2_stratified <- weight_matrix2["set_batch_sampler=1 rep=2", 1:5]
+stopifnot(identical(rep1_standard, rep2_standard))
+stopifnot(identical(rep1_stratified, rep2_stratified))
+```
+
+## 9.3 Exercise: replace torch_randperm with sample
+
+The blog post notes:
+> "Note that this would not have been possible if we used R’s randomness in `batch_sampler_stratified` (exercise for the reader: replace `torch::torch_randperm` with `sample` and show that you get different weights between repetitions)."
+
+Why this happens: `mlr3torch` internally calls `torch_manual_seed(seed)` before each training run, which controls torch’s pseudo-random number generator. However, `torch_manual_seed` does *not* seed R’s built-in RNG. If our custom sampler uses R’s `sample()`, each repetition gets different batch orderings despite the same `seed=1`, causing gradient descent to follow different optimization paths and produce different final weights.
+
+Below we define a stripped-down version of the sampler (without the `save_list` instrumentation, as we only need the final weights) that uses `sample(n)`.
+
+```{r}
+batch_sampler_stratified_rsample <- function(min_samples_per_stratum, shuffle=TRUE){
+  torch::sampler(
+    "StratifiedSamplerRsample",
+    initialize = function(data_source) {
+      self$data_source <- data_source
+      TSK <- data_source$task
+      self$stratum <- TSK$col_roles$stratum
+      self$stratum_dt <- data.table(
+        TSK$data(cols=self$stratum), row.id=1:TSK$nrow)
+      self$set_batch_list()
+    },
+    set_batch_list = function() {
+      get_indices <- if(shuffle){
+        function(n) sample(n)  # <-- REPLACED: R's sample() instead of torch_randperm()
+      }else{
+        function(n) 1:n
+      }
+      index_dt <- self$stratum_dt[get_indices(.N)][
+        , i.in.stratum := 1:.N, by=c(self$stratum)][]
+      
+      count_dt <- index_dt[, .(max.i=max(i.in.stratum)), by=c(self$stratum)][order(max.i)]
+      num_batches <- max(1, count_dt$max.i[1] %/% min_samples_per_stratum) 
+      max_samp <- num_batches * min_samples_per_stratum
+      
+      index_dt[, n.samp := i.in.stratum/max(i.in.stratum)*max_samp, by=c(self$stratum)][
+        , batch.i := ceiling(n.samp/min_samples_per_stratum)][]
+      self$batch_list <- split(index_dt$row.id, index_dt$batch.i)
+    },
+    .iter = function() {
+      batch.i <- 0
+      function() {
+        if (batch.i < length(self$batch_list)) {
+          batch.i <<- batch.i + 1L
+          indices <- self$batch_list[[batch.i]]
+          if (batch.i == length(self$batch_list)) self$set_batch_list()
+          return(indices)
+        }
+        coro::exhausted()
+      }
+    },
+    .length = function() length(self$batch_list)
+  )
+}
+```
+
+**Training loop with the modified sampler:**
+
+We replicate section 9.2's experiment, but using `batch_sampler_stratified_rsample`.
+
+```{r}
+param_list_rsample <- list()
+set.seed(5) # Set initial R seed
+
+for(set_batch_sampler in c(0:1)){
+  for(rep_i in 1:2){
+    L <- mlr3torch::LearnerTorchMLP$new(task_type="classif")
+    L$param_set$set_values(epochs=1, batch_size=10, seed=1)
+    if(set_batch_sampler) {
+      L$param_set$values$batch_sampler <- batch_sampler_stratified_rsample(1)
+    }
+    L$train(sonar_task)
+    param_list_rsample[[sprintf("set_batch_sampler=%d rep=%d", set_batch_sampler, rep_i)]] <- 
+      unlist(lapply(L$model$network$parameters, torch::as_array))
+  }
+}
+
+weight_matrix_rsample <- do.call(rbind, param_list_rsample)
+weight_matrix_rsample[, 1:5]
+```
+
+**Validation:**
+
+Compare with section 9.2 (where all four rows came in identical pairs). 
+- Rows 1-2 (standard sampler): still identical (torch RNG is deterministic via `seed=1`).
+- Rows 3-4 (`sample()` sampler): **different**, because `sample()` uses R's RNG which `torch_manual_seed` does not control.
+
+```{r}
+# Standard sampler: weights must still be identical
+rep1_standard_rs <- weight_matrix_rsample["set_batch_sampler=0 rep=1", 1:5]
+rep2_standard_rs <- weight_matrix_rsample["set_batch_sampler=0 rep=2", 1:5]
+stopifnot(identical(rep1_standard_rs, rep2_standard_rs))
+
+# sample()-based sampler: weights must DIFFER
+rep1_rsample <- weight_matrix_rsample["set_batch_sampler=1 rep=1", 1:5]
+rep2_rsample <- weight_matrix_rsample["set_batch_sampler=1 rep=2", 1:5]
+stopifnot(!identical(rep1_rsample, rep2_rsample))
+```
+
+# 10. ANSWER: "Are they consistent?"
+
+```{r}
+# Helper to check consistency between two reps
+check_consistency <- function(mat, rep1_name, rep2_name) {
+  if (identical(mat[rep1_name, 1:5], mat[rep2_name, 1:5])) {
+    "Identical across repetitions"
+  } else {
+    "Different across repetitions"
+  }
+}
+
+consistency_results <- data.frame(
+  Test = c(
+    "9.1: Weight init (with seed)",
+    "9.1: Weight init (no seed)",
+    "9.2: Standard sampler (seed=1)",
+    "9.2: Stratified sampler with torch_randperm (seed=1)",
+    "9.3: Standard sampler (seed=1, control)",
+    "9.3: Stratified sampler with sample() (seed=1)"
+  ),
+  Expected = c(
+    "Identical across repetitions",
+    "Different across repetitions",
+    "Identical across repetitions",
+    "Identical across repetitions",
+    "Identical across repetitions",
+    "Different across repetitions"
+  ),
+  Observed = c(
+    check_consistency(weight_matrix, "set_seed=1 rep=1", "set_seed=1 rep=2"),
+    check_consistency(weight_matrix, "set_seed=0 rep=1", "set_seed=0 rep=2"),
+    check_consistency(weight_matrix2, "set_batch_sampler=0 rep=1", "set_batch_sampler=0 rep=2"),
+    check_consistency(weight_matrix2, "set_batch_sampler=1 rep=1", "set_batch_sampler=1 rep=2"),
+    check_consistency(weight_matrix_rsample, "set_batch_sampler=0 rep=1", "set_batch_sampler=0 rep=2"),
+    check_consistency(weight_matrix_rsample, "set_batch_sampler=1 rep=1", "set_batch_sampler=1 rep=2")
+  ),
+  stringsAsFactors = FALSE
+)
+
+consistency_results$Status <- ifelse(consistency_results$Expected == consistency_results$Observed, "PASS", "FAIL")
+
+knitr::kable(consistency_results, caption = "Dynamic Reproducibility Test Results")
+```
+
+**Conclusion: YES, the results are highly consistent in two key ways:**
+
+1. **External Consistency (Reproducibility):** The numerical values in my output match tdhock's blog output exactly for all deterministic sections (epoch 1 batch indices, batch size tables, `shuffle=FALSE` results, and final fixed-seed weights), confirming full reproducibility of the original experiment.
+2. **Internal Consistency (RNG Behavior):** All dynamic reproducibility tests confirm the expected mathematical behavior:
+   - `torch_manual_seed(seed)` successfully controls both weight initialization and `torch_randperm`-based batch ordering.
+   - R's `sample()` is **not** controlled by `torch_manual_seed`. This confirms exactly why custom samplers must use `torch_randperm` to guarantee reproducibility within `mlr3torch`'s seeding mechanism.
+
+# 11. Session Information
+
+```{r session-info}
+sessionInfo()
+```
