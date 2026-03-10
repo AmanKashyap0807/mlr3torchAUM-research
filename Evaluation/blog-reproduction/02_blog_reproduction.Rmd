@@ -2,32 +2,32 @@
 title: "Blog Post Code Reproduction"
 author: "Aman Kashyap"
 date: "`r Sys.Date()`"
-output:
-  html_document:
-    toc: true
-    toc_depth: 3
-    css: !expr system.file("rmarkdown/templates/html_vignette/resources/vignette.css", package = "rmarkdown")
-    theme: null
-    self_contained: true
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Blog Post Code Reproduction}
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteEncoding{UTF-8}
 ---
-
-<style>
-body {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px 40px;
-}
-</style>
 
 ```{r setup, include=FALSE}
 # Force CPU execution to prevent CUDA mismatches during typical usage tests
 Sys.setenv(CUDA_VISIBLE_DEVICES = "-1")
 Sys.setenv(TORCH_DEVICE = "cpu")
 
-knitr::opts_chunk$set(echo = TRUE, collapse = FALSE, 
-                      fig.width = 12, fig.height = 5, dpi = 120, out.width = "100%")
+knitr::opts_chunk$set(
+  echo = TRUE,
+  collapse = FALSE,
+  fig.width = 12,
+  fig.height = 5,
+  dpi = 120,
+  out.width = "100%"
+)
 
-library(torch)
+data.table::setDTthreads(1L)
+
+torch_available <- requireNamespace("torch", quietly = TRUE) && torch::torch_is_installed()
+library(mlr3)
+library(data.table)
 ```
 
 # Introduction

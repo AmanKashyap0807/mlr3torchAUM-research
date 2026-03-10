@@ -12,7 +12,7 @@
 
 <meta name="author" content="Aman Kashyap" />
 
-<meta name="date" content="2026-03-06" />
+<meta name="date" content="2026-03-10" />
 
 <title>Typical Usage Vignette Reproduction</title>
 
@@ -341,18 +341,14 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Typical Usage Vignette Reproduction</h1>
 <h4 class="author">Aman Kashyap</h4>
-<h4 class="date">2026-03-06</h4>
+<h4 class="date">2026-03-10</h4>
 
 
 <div id="TOC">
 <ul>
 <li><a href="#introduction" id="toc-introduction">Introduction</a></li>
-<li><a href="#installation" id="toc-installation">1. Installation</a>
-<ul>
-<li><a href="#installing-dependencies" id="toc-installing-dependencies">1.1 Installing Dependencies</a></li>
-<li><a href="#installing-mlr3torchaum" id="toc-installing-mlr3torchaum">1.2 Installing mlr3torchAUM</a></li>
-<li><a href="#environment-verification" id="toc-environment-verification">1.3 Environment Verification</a></li>
-</ul></li>
+<li><a href="#prerequisites" id="toc-prerequisites">1.
+Prerequisites</a></li>
 <li><a href="#vignette-reproduction" id="toc-vignette-reproduction">2.
 Vignette Reproduction</a>
 <ul>
@@ -372,54 +368,25 @@ The objective is to reproduce the typical usage vignette demonstrating
 stratified batch sampling for imbalanced classification using the spam
 dataset.</p>
 <p>Original vignette: <a href="https://github.com/tdhock/mlr3torchAUM/blob/main/vignettes/Typical_usage.Rmd" class="uri">https://github.com/tdhock/mlr3torchAUM/blob/main/vignettes/Typical_usage.Rmd</a></p>
-<p>Execution date: 2026-03-06</p>
+<p>Execution date: 2026-03-10</p>
 </div>
-<div id="installation" class="section level1">
-<h1>1. Installation</h1>
-<div id="installing-dependencies" class="section level2">
-<h2>1.1 Installing Dependencies</h2>
-<p>Installing required packages for mlr3torchAUM functionality.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># Set CRAN mirror for non-interactive installs</span></span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">options</span>(<span class="at">repos =</span> <span class="fu">c</span>(<span class="at">CRAN =</span> <span class="st">&quot;https://cloud.r-project.org&quot;</span>))</span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Install remotes if not available</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">requireNamespace</span>(<span class="st">&quot;remotes&quot;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) {</span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="fu">install.packages</span>(<span class="st">&quot;remotes&quot;</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>}</span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co"># Install torch</span></span>
-<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">requireNamespace</span>(<span class="st">&quot;torch&quot;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) {</span>
-<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  <span class="fu">install.packages</span>(<span class="st">&quot;torch&quot;</span>)</span>
-<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>  torch<span class="sc">::</span><span class="fu">install_torch</span>()</span>
-<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>}</span>
-<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a></span>
-<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co"># Install mlr3 ecosystem</span></span>
-<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">requireNamespace</span>(<span class="st">&quot;mlr3&quot;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) <span class="fu">install.packages</span>(<span class="st">&quot;mlr3&quot;</span>)</span>
-<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">requireNamespace</span>(<span class="st">&quot;mlr3torch&quot;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) <span class="fu">install.packages</span>(<span class="st">&quot;mlr3torch&quot;</span>)</span>
-<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">requireNamespace</span>(<span class="st">&quot;data.table&quot;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) <span class="fu">install.packages</span>(<span class="st">&quot;data.table&quot;</span>)</span>
-<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">requireNamespace</span>(<span class="st">&quot;ggplot2&quot;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) <span class="fu">install.packages</span>(<span class="st">&quot;ggplot2&quot;</span>)</span></code></pre></div>
-</div>
-<div id="installing-mlr3torchaum" class="section level2">
-<h2>1.2 Installing mlr3torchAUM</h2>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;tdhock/mlr3torchAUM&quot;</span>)</span></code></pre></div>
-<pre><code>#&gt; Using GitHub PAT from the git credential store.</code></pre>
-<pre><code>#&gt; Skipping install of &#39;mlr3torchAUM&#39; from a github remote, the SHA1 (dc41c850) has not changed since last install.
-#&gt;   Use `force = TRUE` to force installation</code></pre>
-</div>
-<div id="environment-verification" class="section level2">
-<h2>1.3 Environment Verification</h2>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">library</span>(mlr3torchAUM)</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;mlr3torchAUM version:&quot;</span>, <span class="fu">as.character</span>(<span class="fu">packageVersion</span>(<span class="st">&quot;mlr3torchAUM&quot;</span>)), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
-<pre><code>#&gt; mlr3torchAUM version: 2025.9.23</code></pre>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;torch version:&quot;</span>, <span class="fu">as.character</span>(<span class="fu">packageVersion</span>(<span class="st">&quot;torch&quot;</span>)), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
-<pre><code>#&gt; torch version: 0.16.3</code></pre>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;torch installed:&quot;</span>, torch<span class="sc">::</span><span class="fu">torch_is_installed</span>(), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
-<pre><code>#&gt; torch installed: TRUE</code></pre>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;mlr3 version:&quot;</span>, <span class="fu">as.character</span>(<span class="fu">packageVersion</span>(<span class="st">&quot;mlr3&quot;</span>)), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
-<pre><code>#&gt; mlr3 version: 1.5.0</code></pre>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;R version:&quot;</span>, R.version.string, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
-<pre><code>#&gt; R version: R version 4.5.2 (2025-10-31 ucrt)</code></pre>
-<p>Installation verified</p>
-</div>
+<div id="prerequisites" class="section level1">
+<h1>1. Prerequisites</h1>
+<p>This vignette assumes the following packages are already installed
+(including the torch C++ backend via
+<code>torch::install_torch()</code>):</p>
+<pre><code># CRAN packages
+install.packages(c(&quot;torch&quot;, &quot;mlr3&quot;, &quot;mlr3torch&quot;, &quot;data.table&quot;, &quot;ggplot2&quot;))
+
+# mlr3torchAUM from GitHub
+remotes::install_github(&quot;tdhock/mlr3torchAUM&quot;)</code></pre>
+<p>Note: the install commands above are just for reference and I did not
+execute them during rendering. I read in Writing R Extensions (section
+1.4 on vignettes) that <code>install.packages()</code> should not be
+called inside vignette chunks because CRAN runs them automatically
+during package checks. In an actual package vignette I would list torch
+and mlr3torch under Suggests in DESCRIPTION and use
+<code>requireNamespace()</code> guards instead.</p>
 </div>
 <div id="vignette-reproduction" class="section level1">
 <h1>2. Vignette Reproduction</h1>
@@ -428,100 +395,100 @@ dataset.</p>
 written by tdhock, with inline validation checks added to verify
 numerical correctness.</p>
 <p>Below we create an imbalanced version of spam data set.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>spam_task <span class="ot">&lt;-</span> mlr3<span class="sc">::</span><span class="fu">tsk</span>(<span class="st">&quot;spam&quot;</span>)</span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>spam_task<span class="sc">$</span><span class="fu">filter</span>(<span class="dv">1504</span><span class="sc">:</span><span class="dv">4293</span>) <span class="co"># for imbalance.  310    2480 </span></span>
-<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>Class_vec <span class="ot">&lt;-</span> spam_task<span class="sc">$</span><span class="fu">data</span>(spam_task<span class="sc">$</span>row_ids, <span class="st">&quot;type&quot;</span>)<span class="sc">$</span>type</span>
-<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>(count_tab <span class="ot">&lt;-</span> <span class="fu">table</span>(Class_vec))</span></code></pre></div>
-<pre><code>#&gt; Class_vec
-#&gt;    spam nonspam 
-#&gt;     310    2480</code></pre>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>spam_task <span class="ot">&lt;-</span> mlr3<span class="sc">::</span><span class="fu">tsk</span>(<span class="st">&quot;spam&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>spam_task<span class="sc">$</span><span class="fu">filter</span>(<span class="dv">1504</span><span class="sc">:</span><span class="dv">4293</span>) <span class="co"># for imbalance.  310    2480 </span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>Class_vec <span class="ot">&lt;-</span> spam_task<span class="sc">$</span><span class="fu">data</span>(spam_task<span class="sc">$</span>row_ids, <span class="st">&quot;type&quot;</span>)<span class="sc">$</span>type</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>(count_tab <span class="ot">&lt;-</span> <span class="fu">table</span>(Class_vec))</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; Class_vec</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt;    spam nonspam </span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt;     310    2480</span></span></code></pre></div>
 <p>The output above shows the overall class counts in the data set.
 Below we compute the frequencies.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="fu">stopifnot</span>(count_tab[<span class="st">&quot;spam&quot;</span>] <span class="sc">==</span> <span class="dv">310</span>)</span>
-<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a><span class="fu">stopifnot</span>(count_tab[<span class="st">&quot;nonspam&quot;</span>] <span class="sc">==</span> <span class="dv">2480</span>)</span>
-<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Dataset: 310 spam, 2480 non-spam</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
-<pre><code>#&gt; Dataset: 310 spam, 2480 non-spam</code></pre>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a>count_tab<span class="sc">/</span><span class="fu">sum</span>(count_tab)</span></code></pre></div>
-<pre><code>#&gt; Class_vec
-#&gt;      spam   nonspam 
-#&gt; 0.1111111 0.8888889</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">stopifnot</span>(count_tab[<span class="st">&quot;spam&quot;</span>] <span class="sc">==</span> <span class="dv">310</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">stopifnot</span>(count_tab[<span class="st">&quot;nonspam&quot;</span>] <span class="sc">==</span> <span class="dv">2480</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Dataset: 310 spam, 2480 non-spam</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; Dataset: 310 spam, 2480 non-spam</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>count_tab<span class="sc">/</span><span class="fu">sum</span>(count_tab)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; Class_vec</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt;      spam   nonspam </span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt; 0.1111111 0.8888889</span></span></code></pre></div>
 <p>The output above shows there is about 10% spam and 90% nonspam labels
 overall in the data set.</p>
 <p>Below we create a <code>spam_list</code> object, which we will use to
 show how the stratified sampling works.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="fu">library</span>(data.table)</span></code></pre></div>
-<pre><code>#&gt; data.table 1.18.2.1 using 1 threads (see ?getDTthreads).  Latest news: r-datatable.com</code></pre>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a>orig_X_dt <span class="ot">&lt;-</span> spam_task<span class="sc">$</span><span class="fu">data</span>(spam_task<span class="sc">$</span>row_ids, spam_task<span class="sc">$</span>col_roles<span class="sc">$</span>feature)</span>
-<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>sc_X_dt <span class="ot">&lt;-</span> <span class="fu">data.table</span>(<span class="at">type=</span>Class_vec, <span class="fu">scale</span>(orig_X_dt))</span>
-<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>spam_sc_task <span class="ot">&lt;-</span> mlr3<span class="sc">::</span>TaskClassif<span class="sc">$</span><span class="fu">new</span>(<span class="st">&quot;spam_sc&quot;</span>, sc_X_dt, <span class="at">target=</span><span class="st">&quot;type&quot;</span>)</span>
-<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a>spam_sc_task<span class="sc">$</span>col_roles<span class="sc">$</span>stratum <span class="ot">&lt;-</span> <span class="st">&quot;type&quot;</span></span>
-<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a>spam_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">task=</span>spam_sc_task)</span>
-<span id="cb24-6"><a href="#cb24-6" tabindex="-1"></a>batch_sampler_class <span class="ot">&lt;-</span> mlr3torchAUM<span class="sc">::</span><span class="fu">batch_sampler_stratified</span>(</span>
-<span id="cb24-7"><a href="#cb24-7" tabindex="-1"></a>  <span class="at">min_samples_per_stratum =</span> <span class="dv">1</span>)</span>
-<span id="cb24-8"><a href="#cb24-8" tabindex="-1"></a>batch_sampler_instance <span class="ot">&lt;-</span> <span class="fu">batch_sampler_class</span>(spam_list)</span>
-<span id="cb24-9"><a href="#cb24-9" tabindex="-1"></a>(batch_dt <span class="ot">&lt;-</span> <span class="fu">as.data.table</span>(<span class="fu">t</span>(<span class="fu">sapply</span>(</span>
-<span id="cb24-10"><a href="#cb24-10" tabindex="-1"></a>  batch_sampler_instance<span class="sc">$</span>batch_list,</span>
-<span id="cb24-11"><a href="#cb24-11" tabindex="-1"></a>  <span class="cf">function</span>(i)<span class="fu">table</span>(Class_vec[i])</span>
-<span id="cb24-12"><a href="#cb24-12" tabindex="-1"></a>)), <span class="at">key=</span><span class="fu">c</span>(<span class="st">&quot;spam&quot;</span>,<span class="st">&quot;nonspam&quot;</span>)))</span></code></pre></div>
-<pre><code>#&gt; Key: &lt;spam, nonspam&gt;
-#&gt;       spam nonspam
-#&gt;      &lt;int&gt;   &lt;int&gt;
-#&gt;   1:     1       8
-#&gt;   2:     1       8
-#&gt;   3:     1       8
-#&gt;   4:     1       8
-#&gt;   5:     1       8
-#&gt;  ---              
-#&gt; 306:     1       8
-#&gt; 307:     1       8
-#&gt; 308:     1       8
-#&gt; 309:     1       8
-#&gt; 310:     1       8</code></pre>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a>(batch_size <span class="ot">&lt;-</span> batch_sampler_instance<span class="sc">$</span>batch_size)</span></code></pre></div>
-<pre><code>#&gt; [1] 9</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">library</span>(data.table)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>orig_X_dt <span class="ot">&lt;-</span> spam_task<span class="sc">$</span><span class="fu">data</span>(spam_task<span class="sc">$</span>row_ids, spam_task<span class="sc">$</span>col_roles<span class="sc">$</span>feature)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>sc_X_dt <span class="ot">&lt;-</span> <span class="fu">data.table</span>(<span class="at">type=</span>Class_vec, <span class="fu">scale</span>(orig_X_dt))</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>spam_sc_task <span class="ot">&lt;-</span> mlr3<span class="sc">::</span>TaskClassif<span class="sc">$</span><span class="fu">new</span>(<span class="st">&quot;spam_sc&quot;</span>, sc_X_dt, <span class="at">target=</span><span class="st">&quot;type&quot;</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>spam_sc_task<span class="sc">$</span>col_roles<span class="sc">$</span>stratum <span class="ot">&lt;-</span> <span class="st">&quot;type&quot;</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>spam_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">task=</span>spam_sc_task)</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>batch_sampler_class <span class="ot">&lt;-</span> mlr3torchAUM<span class="sc">::</span><span class="fu">batch_sampler_stratified</span>(</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>  <span class="at">min_samples_per_stratum =</span> <span class="dv">1</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>batch_sampler_instance <span class="ot">&lt;-</span> <span class="fu">batch_sampler_class</span>(spam_list)</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>(batch_dt <span class="ot">&lt;-</span> <span class="fu">as.data.table</span>(<span class="fu">t</span>(<span class="fu">sapply</span>(</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>  batch_sampler_instance<span class="sc">$</span>batch_list,</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>  <span class="cf">function</span>(i)<span class="fu">table</span>(Class_vec[i])</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>)), <span class="at">key=</span><span class="fu">c</span>(<span class="st">&quot;spam&quot;</span>,<span class="st">&quot;nonspam&quot;</span>)))</span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt; Key: &lt;spam, nonspam&gt;</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt;       spam nonspam</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt;      &lt;int&gt;   &lt;int&gt;</span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="co">#&gt;   1:     1       8</span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co">#&gt;   2:     1       8</span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co">#&gt;   3:     1       8</span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a><span class="co">#&gt;   4:     1       8</span></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a><span class="co">#&gt;   5:     1       8</span></span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="co">#&gt;  ---              </span></span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a><span class="co">#&gt; 306:     1       8</span></span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a><span class="co">#&gt; 307:     1       8</span></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a><span class="co">#&gt; 308:     1       8</span></span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a><span class="co">#&gt; 309:     1       8</span></span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a><span class="co">#&gt; 310:     1       8</span></span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a>(batch_size <span class="ot">&lt;-</span> batch_sampler_instance<span class="sc">$</span>batch_size)</span>
+<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a><span class="co">#&gt; [1] 9</span></span></code></pre></div>
 <p>The output above shows that</p>
 <ul>
 <li>there are 310 batches</li>
 <li>all batches have 1 spam label, and 8 nonspam labels,</li>
 <li>so the batch size is 9.</li>
 </ul>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="fu">stopifnot</span>(batch_size <span class="sc">==</span> <span class="dv">9</span>)</span>
-<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">nrow</span>(batch_dt) <span class="sc">==</span> <span class="dv">310</span>)</span>
-<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Batch sampler: 310 batches of size 9</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
-<pre><code>#&gt; Batch sampler: 310 batches of size 9</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">stopifnot</span>(batch_size <span class="sc">==</span> <span class="dv">9</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">nrow</span>(batch_dt) <span class="sc">==</span> <span class="dv">310</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Batch sampler: 310 batches of size 9</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt; Batch sampler: 310 batches of size 9</span></span></code></pre></div>
 <div id="comparison-with-usual-batching" class="section level2">
 <h2>Comparison with usual batching</h2>
 <p>To do the usual torch batching, we first create a learner, and use it
 to derive a dataset:</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a>torch_available <span class="ot">&lt;-</span> <span class="fu">requireNamespace</span>(<span class="st">&quot;mlr3torch&quot;</span>) <span class="sc">&amp;&amp;</span> torch<span class="sc">::</span><span class="fu">torch_is_installed</span>()</span>
-<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a><span class="cf">if</span>(torch_available){</span>
-<span id="cb30-3"><a href="#cb30-3" tabindex="-1"></a>  L <span class="ot">&lt;-</span> mlr3torch<span class="sc">::</span>LearnerTorchMLP<span class="sc">$</span><span class="fu">new</span>(<span class="at">task_type=</span><span class="st">&quot;classif&quot;</span>)</span>
-<span id="cb30-4"><a href="#cb30-4" tabindex="-1"></a>  spam_dataset <span class="ot">&lt;-</span> L<span class="sc">$</span><span class="fu">dataset</span>(spam_sc_task)</span>
-<span id="cb30-5"><a href="#cb30-5" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>torch_available <span class="ot">&lt;-</span> <span class="fu">requireNamespace</span>(<span class="st">&quot;mlr3torch&quot;</span>) <span class="sc">&amp;&amp;</span> torch<span class="sc">::</span><span class="fu">torch_is_installed</span>()</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#&gt; Loading required namespace: mlr3torch</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="cf">if</span>(torch_available){</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  L <span class="ot">&lt;-</span> mlr3torch<span class="sc">::</span>LearnerTorchMLP<span class="sc">$</span><span class="fu">new</span>(<span class="at">task_type=</span><span class="st">&quot;classif&quot;</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  spam_dataset <span class="ot">&lt;-</span> L<span class="sc">$</span><span class="fu">dataset</span>(spam_sc_task)</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>}</span></code></pre></div>
 <p>Then we compare the two data loading mechanisms:</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="cf">if</span>(torch_available){</span>
-<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a>  batch_y_dt_list <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb31-3"><a href="#cb31-3" tabindex="-1"></a>  <span class="cf">for</span>(set_batch_sampler <span class="cf">in</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>)){</span>
-<span id="cb31-4"><a href="#cb31-4" tabindex="-1"></a>    spam_loader <span class="ot">&lt;-</span> torch<span class="sc">::</span><span class="fu">dataloader</span>(</span>
-<span id="cb31-5"><a href="#cb31-5" tabindex="-1"></a>      spam_dataset, <span class="at">batch_size=</span>batch_size, <span class="at">shuffle=</span><span class="cn">TRUE</span>,</span>
-<span id="cb31-6"><a href="#cb31-6" tabindex="-1"></a>      <span class="at">batch_sampler=</span><span class="cf">if</span>(set_batch_sampler)batch_sampler_instance)</span>
-<span id="cb31-7"><a href="#cb31-7" tabindex="-1"></a>    batch.i <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb31-8"><a href="#cb31-8" tabindex="-1"></a>    torch<span class="sc">::</span><span class="fu">torch_manual_seed</span>(<span class="dv">2</span>)</span>
-<span id="cb31-9"><a href="#cb31-9" tabindex="-1"></a>    coro<span class="sc">::</span><span class="fu">loop</span>(<span class="cf">for</span>(batch <span class="cf">in</span> spam_loader){</span>
-<span id="cb31-10"><a href="#cb31-10" tabindex="-1"></a>      batch.i <span class="ot">&lt;-</span> batch.i<span class="sc">+</span><span class="dv">1</span></span>
-<span id="cb31-11"><a href="#cb31-11" tabindex="-1"></a>      batch_y_dt_list[[<span class="fu">paste</span>(set_batch_sampler, batch.i)]] <span class="ot">&lt;-</span> <span class="fu">data.table</span>(</span>
-<span id="cb31-12"><a href="#cb31-12" tabindex="-1"></a>        set_batch_sampler, batch.i,</span>
-<span id="cb31-13"><a href="#cb31-13" tabindex="-1"></a>        <span class="at">type=</span><span class="fu">ifelse</span>(torch<span class="sc">::</span><span class="fu">as_array</span>(batch<span class="sc">$</span>y<span class="sc">$</span><span class="fu">flatten</span>())<span class="sc">==</span><span class="dv">1</span>, <span class="st">&quot;spam&quot;</span>, <span class="st">&quot;nonspam&quot;</span>))</span>
-<span id="cb31-14"><a href="#cb31-14" tabindex="-1"></a>    })</span>
-<span id="cb31-15"><a href="#cb31-15" tabindex="-1"></a>  }</span>
-<span id="cb31-16"><a href="#cb31-16" tabindex="-1"></a>  (batch_y_dt <span class="ot">&lt;-</span> <span class="fu">rbindlist</span>(batch_y_dt_list))</span>
-<span id="cb31-17"><a href="#cb31-17" tabindex="-1"></a>  (batch_y_counts <span class="ot">&lt;-</span> <span class="fu">dcast</span>(batch_y_dt, set_batch_sampler <span class="sc">+</span> batch.i <span class="sc">~</span> type, length))</span>
-<span id="cb31-18"><a href="#cb31-18" tabindex="-1"></a>  batch_y_counts[, <span class="fu">table</span>(set_batch_sampler, spam)]</span>
-<span id="cb31-19"><a href="#cb31-19" tabindex="-1"></a>}</span></code></pre></div>
-<pre><code>#&gt;                  spam
-#&gt; set_batch_sampler   0   1   2   3   4   5
-#&gt;             FALSE 104 124  63  17   1   1
-#&gt;             TRUE    0 310   0   0   0   0</code></pre>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="cf">if</span>(torch_available){</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  batch_y_dt_list <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="cf">for</span>(set_batch_sampler <span class="cf">in</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>)){</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>    spam_loader <span class="ot">&lt;-</span> torch<span class="sc">::</span><span class="fu">dataloader</span>(</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>      spam_dataset, <span class="at">batch_size=</span>batch_size, <span class="at">shuffle=</span><span class="cn">TRUE</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>      <span class="at">batch_sampler=</span><span class="cf">if</span>(set_batch_sampler)batch_sampler_instance)</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>    batch.i <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>    torch<span class="sc">::</span><span class="fu">torch_manual_seed</span>(<span class="dv">2</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>    coro<span class="sc">::</span><span class="fu">loop</span>(<span class="cf">for</span>(batch <span class="cf">in</span> spam_loader){</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>      batch.i <span class="ot">&lt;-</span> batch.i<span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>      batch_y_dt_list[[<span class="fu">paste</span>(set_batch_sampler, batch.i)]] <span class="ot">&lt;-</span> <span class="fu">data.table</span>(</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>        set_batch_sampler, batch.i,</span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>        <span class="at">type=</span><span class="fu">ifelse</span>(torch<span class="sc">::</span><span class="fu">as_array</span>(batch<span class="sc">$</span>y<span class="sc">$</span><span class="fu">flatten</span>())<span class="sc">==</span><span class="dv">1</span>, <span class="st">&quot;spam&quot;</span>, <span class="st">&quot;nonspam&quot;</span>))</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>    })</span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>  }</span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>  (batch_y_dt <span class="ot">&lt;-</span> <span class="fu">rbindlist</span>(batch_y_dt_list))</span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>  (batch_y_counts <span class="ot">&lt;-</span> <span class="fu">dcast</span>(batch_y_dt, set_batch_sampler <span class="sc">+</span> batch.i <span class="sc">~</span> type, length))</span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a>  batch_y_counts[, <span class="fu">table</span>(set_batch_sampler, spam)]</span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a>}</span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="co">#&gt;                  spam</span></span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a><span class="co">#&gt; set_batch_sampler   0   1   2   3   4   5</span></span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a><span class="co">#&gt;             FALSE 104 124  63  17   1   1</span></span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a><span class="co">#&gt;             TRUE    0 310   0   0   0   0</span></span></code></pre></div>
 <p>The output above shows that</p>
 <ul>
 <li>when <code>set_batch_sampler=FALSE</code> (random batching) there
@@ -531,141 +498,141 @@ least one of each label in each batch (otherwise gradient zero).</li>
 <li>when <code>set_batch_sampler=TRUE</code> (stratified batching) each
 of the 310 batches has one positive/spam label.</li>
 </ul>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="cf">if</span>(torch_available){</span>
-<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a>  <span class="co"># Count problematic batches in random sampling</span></span>
-<span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a>  zero_spam_count <span class="ot">&lt;-</span> <span class="fu">sum</span>(batch_y_counts[set_batch_sampler<span class="sc">==</span><span class="cn">FALSE</span>]<span class="sc">$</span>spam <span class="sc">==</span> <span class="dv">0</span>)</span>
-<span id="cb33-4"><a href="#cb33-4" tabindex="-1"></a>  </span>
-<span id="cb33-5"><a href="#cb33-5" tabindex="-1"></a>  <span class="co"># Check stratified sampling always has spam</span></span>
-<span id="cb33-6"><a href="#cb33-6" tabindex="-1"></a>  min_spam_stratified <span class="ot">&lt;-</span> <span class="fu">min</span>(batch_y_counts[set_batch_sampler<span class="sc">==</span><span class="cn">TRUE</span>]<span class="sc">$</span>spam)</span>
-<span id="cb33-7"><a href="#cb33-7" tabindex="-1"></a>  </span>
-<span id="cb33-8"><a href="#cb33-8" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;Comparison validated:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb33-9"><a href="#cb33-9" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;  - Random sampling:&quot;</span>, zero_spam_count, <span class="st">&quot;batches with no spam</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb33-10"><a href="#cb33-10" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;  - Stratified sampling: min&quot;</span>, min_spam_stratified, <span class="st">&quot;spam per batch</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb33-11"><a href="#cb33-11" tabindex="-1"></a>  </span>
-<span id="cb33-12"><a href="#cb33-12" tabindex="-1"></a>  <span class="fu">stopifnot</span>(zero_spam_count <span class="sc">&gt;</span> <span class="dv">100</span>)</span>
-<span id="cb33-13"><a href="#cb33-13" tabindex="-1"></a>  <span class="fu">stopifnot</span>(min_spam_stratified <span class="sc">&gt;=</span> <span class="dv">1</span>)</span>
-<span id="cb33-14"><a href="#cb33-14" tabindex="-1"></a>}</span></code></pre></div>
-<pre><code>#&gt; Comparison validated:
-#&gt;   - Random sampling: 104 batches with no spam
-#&gt;   - Stratified sampling: min 1 spam per batch</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="cf">if</span>(torch_available){</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="co"># Count problematic batches in random sampling</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  zero_spam_count <span class="ot">&lt;-</span> <span class="fu">sum</span>(batch_y_counts[set_batch_sampler<span class="sc">==</span><span class="cn">FALSE</span>]<span class="sc">$</span>spam <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  </span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="co"># Check stratified sampling always has spam</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  min_spam_stratified <span class="ot">&lt;-</span> <span class="fu">min</span>(batch_y_counts[set_batch_sampler<span class="sc">==</span><span class="cn">TRUE</span>]<span class="sc">$</span>spam)</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  </span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;Comparison validated:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;  - Random sampling:&quot;</span>, zero_spam_count, <span class="st">&quot;batches with no spam</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;  - Stratified sampling: min&quot;</span>, min_spam_stratified, <span class="st">&quot;spam per batch</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>  </span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>  <span class="fu">stopifnot</span>(zero_spam_count <span class="sc">&gt;</span> <span class="dv">100</span>)</span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>  <span class="fu">stopifnot</span>(min_spam_stratified <span class="sc">&gt;=</span> <span class="dv">1</span>)</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>}</span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; Comparison validated:</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt;   - Random sampling: 104 batches with no spam</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt;   - Stratified sampling: min 1 spam per batch</span></span></code></pre></div>
 </div>
 <div id="benchmark-comparison" class="section level2">
 <h2>Benchmark comparison</h2>
 <p>The real test of the sampler is in the context of gradient descent
 learning, as below.</p>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a><span class="cf">if</span>(torch_available){</span>
-<span id="cb35-2"><a href="#cb35-2" tabindex="-1"></a>  measure_list <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb35-3"><a href="#cb35-3" tabindex="-1"></a>    mlr3torchAUM<span class="sc">::</span>MeasureClassifInvAUC<span class="sc">$</span><span class="fu">new</span>(),</span>
-<span id="cb35-4"><a href="#cb35-4" tabindex="-1"></a>    mlr3torchAUM<span class="sc">::</span>MeasureClassifROCAUM<span class="sc">$</span><span class="fu">new</span>())</span>
-<span id="cb35-5"><a href="#cb35-5" tabindex="-1"></a>  batch_sampler_list <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb35-6"><a href="#cb35-6" tabindex="-1"></a>    <span class="at">random_full=</span>mlr3torchAUM<span class="sc">::</span><span class="fu">batch_sampler_random</span>(<span class="dv">10000</span>),</span>
-<span id="cb35-7"><a href="#cb35-7" tabindex="-1"></a>    <span class="at">stratified_full=</span>mlr3torchAUM<span class="sc">::</span><span class="fu">batch_sampler_stratified</span>(<span class="dv">10000</span>),</span>
-<span id="cb35-8"><a href="#cb35-8" tabindex="-1"></a>    <span class="at">random_stoch=</span>mlr3torchAUM<span class="sc">::</span><span class="fu">batch_sampler_random</span>(<span class="dv">9</span>),</span>
-<span id="cb35-9"><a href="#cb35-9" tabindex="-1"></a>    <span class="at">stratified_stoch=</span>mlr3torchAUM<span class="sc">::</span><span class="fu">batch_sampler_stratified</span>(<span class="dv">1</span>))</span>
-<span id="cb35-10"><a href="#cb35-10" tabindex="-1"></a>  result_for_sampler <span class="ot">&lt;-</span> <span class="cf">function</span>(batching){</span>
-<span id="cb35-11"><a href="#cb35-11" tabindex="-1"></a>    L <span class="ot">&lt;-</span> mlr3torch<span class="sc">::</span>LearnerTorchMLP<span class="sc">$</span><span class="fu">new</span>(<span class="at">task_type=</span><span class="st">&quot;classif&quot;</span>)</span>
-<span id="cb35-12"><a href="#cb35-12" tabindex="-1"></a>    L<span class="sc">$</span>loss <span class="ot">&lt;-</span> mlr3torchAUM<span class="sc">:::</span>nn_ROCAUM_loss</span>
-<span id="cb35-13"><a href="#cb35-13" tabindex="-1"></a>    L<span class="sc">$</span>optimizer <span class="ot">&lt;-</span> mlr3torch<span class="sc">::</span><span class="fu">t_opt</span>(<span class="st">&quot;sgd&quot;</span>, <span class="at">lr=</span><span class="fl">0.001</span>)</span>
-<span id="cb35-14"><a href="#cb35-14" tabindex="-1"></a>    L<span class="sc">$</span>predict_type <span class="ot">&lt;-</span> <span class="st">&quot;prob&quot;</span></span>
-<span id="cb35-15"><a href="#cb35-15" tabindex="-1"></a>    L<span class="sc">$</span>callbacks <span class="ot">&lt;-</span> mlr3torch<span class="sc">::</span><span class="fu">t_clbk</span>(<span class="st">&quot;history&quot;</span>)</span>
-<span id="cb35-16"><a href="#cb35-16" tabindex="-1"></a>    L<span class="sc">$</span>param_set<span class="sc">$</span><span class="fu">set_values</span>(</span>
-<span id="cb35-17"><a href="#cb35-17" tabindex="-1"></a>      <span class="at">epochs=</span><span class="dv">20</span>, <span class="at">batch_size=</span>batch_size, <span class="at">seed=</span><span class="dv">1</span>,</span>
-<span id="cb35-18"><a href="#cb35-18" tabindex="-1"></a>      <span class="at">measures_valid=</span>measure_list,</span>
-<span id="cb35-19"><a href="#cb35-19" tabindex="-1"></a>      <span class="at">measures_train=</span>measure_list,</span>
-<span id="cb35-20"><a href="#cb35-20" tabindex="-1"></a>      <span class="at">batch_sampler=</span>batch_sampler_list[[batching]])</span>
-<span id="cb35-21"><a href="#cb35-21" tabindex="-1"></a>    <span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb35-22"><a href="#cb35-22" tabindex="-1"></a>    mlr3<span class="sc">::</span><span class="fu">set_validate</span>(L, <span class="fl">0.5</span>)</span>
-<span id="cb35-23"><a href="#cb35-23" tabindex="-1"></a>    L<span class="sc">$</span><span class="fu">train</span>(spam_sc_task)</span>
-<span id="cb35-24"><a href="#cb35-24" tabindex="-1"></a>    <span class="fu">print</span>(L<span class="sc">$</span>model<span class="sc">$</span>loss_fn)</span>
-<span id="cb35-25"><a href="#cb35-25" tabindex="-1"></a>    <span class="fu">list</span>(</span>
-<span id="cb35-26"><a href="#cb35-26" tabindex="-1"></a>      <span class="at">loss=</span><span class="fu">sapply</span>(L<span class="sc">$</span>model<span class="sc">$</span>loss_fn, torch<span class="sc">::</span>as_array),</span>
-<span id="cb35-27"><a href="#cb35-27" tabindex="-1"></a>      <span class="at">history=</span><span class="fu">data.table</span>(batching, L<span class="sc">$</span>model<span class="sc">$</span>callbacks<span class="sc">$</span>history),</span>
-<span id="cb35-28"><a href="#cb35-28" tabindex="-1"></a>      <span class="at">weights=</span>torch<span class="sc">::</span><span class="fu">as_array</span>(L<span class="sc">$</span>model<span class="sc">$</span>network<span class="sc">$</span>parameters[[<span class="st">&quot;0.weight&quot;</span>]]<span class="sc">$</span><span class="fu">flatten</span>()))</span>
-<span id="cb35-29"><a href="#cb35-29" tabindex="-1"></a>  }</span>
-<span id="cb35-30"><a href="#cb35-30" tabindex="-1"></a>  <span class="cf">if</span>(<span class="cn">FALSE</span>){</span>
-<span id="cb35-31"><a href="#cb35-31" tabindex="-1"></a>    future<span class="sc">::</span><span class="fu">plan</span>(<span class="st">&quot;multisession&quot;</span>)</span>
-<span id="cb35-32"><a href="#cb35-32" tabindex="-1"></a>  }</span>
-<span id="cb35-33"><a href="#cb35-33" tabindex="-1"></a>  LAPPLY <span class="ot">&lt;-</span> <span class="cf">if</span>(<span class="fu">requireNamespace</span>(<span class="st">&quot;future.apply&quot;</span>)){</span>
-<span id="cb35-34"><a href="#cb35-34" tabindex="-1"></a>    <span class="cf">function</span>(x, ...)future.apply<span class="sc">::</span><span class="fu">future_lapply</span>(x, ..., <span class="at">future.seed=</span><span class="cn">NULL</span>)</span>
-<span id="cb35-35"><a href="#cb35-35" tabindex="-1"></a>  }<span class="cf">else</span> lapply</span>
-<span id="cb35-36"><a href="#cb35-36" tabindex="-1"></a>  result_list <span class="ot">&lt;-</span> <span class="fu">LAPPLY</span>(<span class="fu">names</span>(batch_sampler_list), result_for_sampler)</span>
-<span id="cb35-37"><a href="#cb35-37" tabindex="-1"></a>  <span class="fu">names</span>(result_list) <span class="ot">&lt;-</span> <span class="fu">names</span>(batch_sampler_list)</span>
-<span id="cb35-38"><a href="#cb35-38" tabindex="-1"></a>  <span class="fu">print</span>(<span class="fu">do.call</span>(data.table, <span class="fu">lapply</span>(result_list, <span class="st">&quot;[[&quot;</span>, <span class="st">&quot;weights&quot;</span>)), <span class="at">nrow=</span><span class="dv">10</span>)</span>
-<span id="cb35-39"><a href="#cb35-39" tabindex="-1"></a>}</span></code></pre></div>
-<pre><code>#&gt; Loading required namespace: future.apply</code></pre>
-<pre><code>#&gt; $evals
-#&gt; torch_tensor
-#&gt;  20
-#&gt; [ CPULongType{1} ]
-#&gt; 
-#&gt; $zeros
-#&gt; torch_tensor
-#&gt;  0
-#&gt; [ CPULongType{1} ]
-#&gt; 
-#&gt; $all_one_class
-#&gt; torch_tensor
-#&gt;  0
-#&gt; [ CPULongType{1} ]
-#&gt; 
-#&gt; $evals
-#&gt; torch_tensor
-#&gt;  20
-#&gt; [ CPULongType{1} ]
-#&gt; 
-#&gt; $zeros
-#&gt; torch_tensor
-#&gt;  0
-#&gt; [ CPULongType{1} ]
-#&gt; 
-#&gt; $all_one_class
-#&gt; torch_tensor
-#&gt;  0
-#&gt; [ CPULongType{1} ]
-#&gt; 
-#&gt; $evals
-#&gt; torch_tensor
-#&gt;  3120
-#&gt; [ CPULongType{1} ]
-#&gt; 
-#&gt; $zeros
-#&gt; torch_tensor
-#&gt;  2238
-#&gt; [ CPULongType{1} ]
-#&gt; 
-#&gt; $all_one_class
-#&gt; torch_tensor
-#&gt;  1097
-#&gt; [ CPULongType{1} ]
-#&gt; 
-#&gt; $evals
-#&gt; torch_tensor
-#&gt;  3100
-#&gt; [ CPULongType{1} ]
-#&gt; 
-#&gt; $zeros
-#&gt; torch_tensor
-#&gt;  2089
-#&gt; [ CPULongType{1} ]
-#&gt; 
-#&gt; $all_one_class
-#&gt; torch_tensor
-#&gt;  0
-#&gt; [ CPULongType{1} ]
-#&gt; 
-#&gt;     random_full stratified_full random_stoch stratified_stoch
-#&gt;           &lt;num&gt;           &lt;num&gt;        &lt;num&gt;            &lt;num&gt;
-#&gt;  1: -0.11657070     -0.11657070 -0.088925309    -0.0843923762
-#&gt;  2:  0.07028408      0.07028408  0.049827855     0.0523436479
-#&gt;  3: -0.11069953     -0.11069953 -0.035647586    -0.0273251589
-#&gt;  4: -0.05331084     -0.05331084  0.015634460     0.0202535167
-#&gt;  5: -0.02132012     -0.02132012  0.005147733    -0.0019478808
-#&gt; ---                                                          
-#&gt; 53: -0.05770090     -0.05770090 -0.043305822    -0.0358783230
-#&gt; 54:  0.04815726      0.04815726 -0.011835631    -0.0097802943
-#&gt; 55: -0.07650664     -0.07650664 -0.048252337    -0.0373525396
-#&gt; 56: -0.03016432     -0.03016432 -0.001547314    -0.0018719076
-#&gt; 57:  0.01122444      0.01122444 -0.006076386     0.0003220944</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="cf">if</span>(torch_available){</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  measure_list <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>    mlr3torchAUM<span class="sc">::</span>MeasureClassifInvAUC<span class="sc">$</span><span class="fu">new</span>(),</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>    mlr3torchAUM<span class="sc">::</span>MeasureClassifROCAUM<span class="sc">$</span><span class="fu">new</span>())</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  batch_sampler_list <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>    <span class="at">random_full=</span>mlr3torchAUM<span class="sc">::</span><span class="fu">batch_sampler_random</span>(<span class="dv">10000</span>),</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>    <span class="at">stratified_full=</span>mlr3torchAUM<span class="sc">::</span><span class="fu">batch_sampler_stratified</span>(<span class="dv">10000</span>),</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>    <span class="at">random_stoch=</span>mlr3torchAUM<span class="sc">::</span><span class="fu">batch_sampler_random</span>(<span class="dv">9</span>),</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>    <span class="at">stratified_stoch=</span>mlr3torchAUM<span class="sc">::</span><span class="fu">batch_sampler_stratified</span>(<span class="dv">1</span>))</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>  result_for_sampler <span class="ot">&lt;-</span> <span class="cf">function</span>(batching){</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>    L <span class="ot">&lt;-</span> mlr3torch<span class="sc">::</span>LearnerTorchMLP<span class="sc">$</span><span class="fu">new</span>(<span class="at">task_type=</span><span class="st">&quot;classif&quot;</span>)</span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>    L<span class="sc">$</span>loss <span class="ot">&lt;-</span> mlr3torchAUM<span class="sc">:::</span>nn_ROCAUM_loss</span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>    L<span class="sc">$</span>optimizer <span class="ot">&lt;-</span> mlr3torch<span class="sc">::</span><span class="fu">t_opt</span>(<span class="st">&quot;sgd&quot;</span>, <span class="at">lr=</span><span class="fl">0.001</span>)</span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>    L<span class="sc">$</span>predict_type <span class="ot">&lt;-</span> <span class="st">&quot;prob&quot;</span></span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>    L<span class="sc">$</span>callbacks <span class="ot">&lt;-</span> mlr3torch<span class="sc">::</span><span class="fu">t_clbk</span>(<span class="st">&quot;history&quot;</span>)</span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a>    L<span class="sc">$</span>param_set<span class="sc">$</span><span class="fu">set_values</span>(</span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a>      <span class="at">epochs=</span><span class="dv">20</span>, <span class="at">batch_size=</span>batch_size, <span class="at">seed=</span><span class="dv">1</span>,</span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a>      <span class="at">measures_valid=</span>measure_list,</span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a>      <span class="at">measures_train=</span>measure_list,</span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a>      <span class="at">batch_sampler=</span>batch_sampler_list[[batching]])</span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a>    <span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a>    mlr3<span class="sc">::</span><span class="fu">set_validate</span>(L, <span class="fl">0.5</span>)</span>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a>    L<span class="sc">$</span><span class="fu">train</span>(spam_sc_task)</span>
+<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a>    <span class="fu">print</span>(L<span class="sc">$</span>model<span class="sc">$</span>loss_fn)</span>
+<span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a>    <span class="fu">list</span>(</span>
+<span id="cb10-26"><a href="#cb10-26" tabindex="-1"></a>      <span class="at">loss=</span><span class="fu">sapply</span>(L<span class="sc">$</span>model<span class="sc">$</span>loss_fn, torch<span class="sc">::</span>as_array),</span>
+<span id="cb10-27"><a href="#cb10-27" tabindex="-1"></a>      <span class="at">history=</span><span class="fu">data.table</span>(batching, L<span class="sc">$</span>model<span class="sc">$</span>callbacks<span class="sc">$</span>history),</span>
+<span id="cb10-28"><a href="#cb10-28" tabindex="-1"></a>      <span class="at">weights=</span>torch<span class="sc">::</span><span class="fu">as_array</span>(L<span class="sc">$</span>model<span class="sc">$</span>network<span class="sc">$</span>parameters[[<span class="st">&quot;0.weight&quot;</span>]]<span class="sc">$</span><span class="fu">flatten</span>()))</span>
+<span id="cb10-29"><a href="#cb10-29" tabindex="-1"></a>  }</span>
+<span id="cb10-30"><a href="#cb10-30" tabindex="-1"></a>  <span class="cf">if</span>(<span class="cn">FALSE</span>){</span>
+<span id="cb10-31"><a href="#cb10-31" tabindex="-1"></a>    future<span class="sc">::</span><span class="fu">plan</span>(<span class="st">&quot;multisession&quot;</span>)</span>
+<span id="cb10-32"><a href="#cb10-32" tabindex="-1"></a>  }</span>
+<span id="cb10-33"><a href="#cb10-33" tabindex="-1"></a>  LAPPLY <span class="ot">&lt;-</span> <span class="cf">if</span>(<span class="fu">requireNamespace</span>(<span class="st">&quot;future.apply&quot;</span>)){</span>
+<span id="cb10-34"><a href="#cb10-34" tabindex="-1"></a>    <span class="cf">function</span>(x, ...)future.apply<span class="sc">::</span><span class="fu">future_lapply</span>(x, ..., <span class="at">future.seed=</span><span class="cn">NULL</span>)</span>
+<span id="cb10-35"><a href="#cb10-35" tabindex="-1"></a>  }<span class="cf">else</span> lapply</span>
+<span id="cb10-36"><a href="#cb10-36" tabindex="-1"></a>  result_list <span class="ot">&lt;-</span> <span class="fu">LAPPLY</span>(<span class="fu">names</span>(batch_sampler_list), result_for_sampler)</span>
+<span id="cb10-37"><a href="#cb10-37" tabindex="-1"></a>  <span class="fu">names</span>(result_list) <span class="ot">&lt;-</span> <span class="fu">names</span>(batch_sampler_list)</span>
+<span id="cb10-38"><a href="#cb10-38" tabindex="-1"></a>  <span class="fu">print</span>(<span class="fu">do.call</span>(data.table, <span class="fu">lapply</span>(result_list, <span class="st">&quot;[[&quot;</span>, <span class="st">&quot;weights&quot;</span>)), <span class="at">nrow=</span><span class="dv">10</span>)</span>
+<span id="cb10-39"><a href="#cb10-39" tabindex="-1"></a>}</span>
+<span id="cb10-40"><a href="#cb10-40" tabindex="-1"></a><span class="co">#&gt; Loading required namespace: future.apply</span></span>
+<span id="cb10-41"><a href="#cb10-41" tabindex="-1"></a><span class="co">#&gt; $evals</span></span>
+<span id="cb10-42"><a href="#cb10-42" tabindex="-1"></a><span class="co">#&gt; torch_tensor</span></span>
+<span id="cb10-43"><a href="#cb10-43" tabindex="-1"></a><span class="co">#&gt;  20</span></span>
+<span id="cb10-44"><a href="#cb10-44" tabindex="-1"></a><span class="co">#&gt; [ CPULongType{1} ]</span></span>
+<span id="cb10-45"><a href="#cb10-45" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-46"><a href="#cb10-46" tabindex="-1"></a><span class="co">#&gt; $zeros</span></span>
+<span id="cb10-47"><a href="#cb10-47" tabindex="-1"></a><span class="co">#&gt; torch_tensor</span></span>
+<span id="cb10-48"><a href="#cb10-48" tabindex="-1"></a><span class="co">#&gt;  0</span></span>
+<span id="cb10-49"><a href="#cb10-49" tabindex="-1"></a><span class="co">#&gt; [ CPULongType{1} ]</span></span>
+<span id="cb10-50"><a href="#cb10-50" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-51"><a href="#cb10-51" tabindex="-1"></a><span class="co">#&gt; $all_one_class</span></span>
+<span id="cb10-52"><a href="#cb10-52" tabindex="-1"></a><span class="co">#&gt; torch_tensor</span></span>
+<span id="cb10-53"><a href="#cb10-53" tabindex="-1"></a><span class="co">#&gt;  0</span></span>
+<span id="cb10-54"><a href="#cb10-54" tabindex="-1"></a><span class="co">#&gt; [ CPULongType{1} ]</span></span>
+<span id="cb10-55"><a href="#cb10-55" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-56"><a href="#cb10-56" tabindex="-1"></a><span class="co">#&gt; $evals</span></span>
+<span id="cb10-57"><a href="#cb10-57" tabindex="-1"></a><span class="co">#&gt; torch_tensor</span></span>
+<span id="cb10-58"><a href="#cb10-58" tabindex="-1"></a><span class="co">#&gt;  20</span></span>
+<span id="cb10-59"><a href="#cb10-59" tabindex="-1"></a><span class="co">#&gt; [ CPULongType{1} ]</span></span>
+<span id="cb10-60"><a href="#cb10-60" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-61"><a href="#cb10-61" tabindex="-1"></a><span class="co">#&gt; $zeros</span></span>
+<span id="cb10-62"><a href="#cb10-62" tabindex="-1"></a><span class="co">#&gt; torch_tensor</span></span>
+<span id="cb10-63"><a href="#cb10-63" tabindex="-1"></a><span class="co">#&gt;  0</span></span>
+<span id="cb10-64"><a href="#cb10-64" tabindex="-1"></a><span class="co">#&gt; [ CPULongType{1} ]</span></span>
+<span id="cb10-65"><a href="#cb10-65" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-66"><a href="#cb10-66" tabindex="-1"></a><span class="co">#&gt; $all_one_class</span></span>
+<span id="cb10-67"><a href="#cb10-67" tabindex="-1"></a><span class="co">#&gt; torch_tensor</span></span>
+<span id="cb10-68"><a href="#cb10-68" tabindex="-1"></a><span class="co">#&gt;  0</span></span>
+<span id="cb10-69"><a href="#cb10-69" tabindex="-1"></a><span class="co">#&gt; [ CPULongType{1} ]</span></span>
+<span id="cb10-70"><a href="#cb10-70" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-71"><a href="#cb10-71" tabindex="-1"></a><span class="co">#&gt; $evals</span></span>
+<span id="cb10-72"><a href="#cb10-72" tabindex="-1"></a><span class="co">#&gt; torch_tensor</span></span>
+<span id="cb10-73"><a href="#cb10-73" tabindex="-1"></a><span class="co">#&gt;  3120</span></span>
+<span id="cb10-74"><a href="#cb10-74" tabindex="-1"></a><span class="co">#&gt; [ CPULongType{1} ]</span></span>
+<span id="cb10-75"><a href="#cb10-75" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-76"><a href="#cb10-76" tabindex="-1"></a><span class="co">#&gt; $zeros</span></span>
+<span id="cb10-77"><a href="#cb10-77" tabindex="-1"></a><span class="co">#&gt; torch_tensor</span></span>
+<span id="cb10-78"><a href="#cb10-78" tabindex="-1"></a><span class="co">#&gt;  2238</span></span>
+<span id="cb10-79"><a href="#cb10-79" tabindex="-1"></a><span class="co">#&gt; [ CPULongType{1} ]</span></span>
+<span id="cb10-80"><a href="#cb10-80" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-81"><a href="#cb10-81" tabindex="-1"></a><span class="co">#&gt; $all_one_class</span></span>
+<span id="cb10-82"><a href="#cb10-82" tabindex="-1"></a><span class="co">#&gt; torch_tensor</span></span>
+<span id="cb10-83"><a href="#cb10-83" tabindex="-1"></a><span class="co">#&gt;  1097</span></span>
+<span id="cb10-84"><a href="#cb10-84" tabindex="-1"></a><span class="co">#&gt; [ CPULongType{1} ]</span></span>
+<span id="cb10-85"><a href="#cb10-85" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-86"><a href="#cb10-86" tabindex="-1"></a><span class="co">#&gt; $evals</span></span>
+<span id="cb10-87"><a href="#cb10-87" tabindex="-1"></a><span class="co">#&gt; torch_tensor</span></span>
+<span id="cb10-88"><a href="#cb10-88" tabindex="-1"></a><span class="co">#&gt;  3100</span></span>
+<span id="cb10-89"><a href="#cb10-89" tabindex="-1"></a><span class="co">#&gt; [ CPULongType{1} ]</span></span>
+<span id="cb10-90"><a href="#cb10-90" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-91"><a href="#cb10-91" tabindex="-1"></a><span class="co">#&gt; $zeros</span></span>
+<span id="cb10-92"><a href="#cb10-92" tabindex="-1"></a><span class="co">#&gt; torch_tensor</span></span>
+<span id="cb10-93"><a href="#cb10-93" tabindex="-1"></a><span class="co">#&gt;  2089</span></span>
+<span id="cb10-94"><a href="#cb10-94" tabindex="-1"></a><span class="co">#&gt; [ CPULongType{1} ]</span></span>
+<span id="cb10-95"><a href="#cb10-95" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-96"><a href="#cb10-96" tabindex="-1"></a><span class="co">#&gt; $all_one_class</span></span>
+<span id="cb10-97"><a href="#cb10-97" tabindex="-1"></a><span class="co">#&gt; torch_tensor</span></span>
+<span id="cb10-98"><a href="#cb10-98" tabindex="-1"></a><span class="co">#&gt;  0</span></span>
+<span id="cb10-99"><a href="#cb10-99" tabindex="-1"></a><span class="co">#&gt; [ CPULongType{1} ]</span></span>
+<span id="cb10-100"><a href="#cb10-100" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-101"><a href="#cb10-101" tabindex="-1"></a><span class="co">#&gt;     random_full stratified_full random_stoch stratified_stoch</span></span>
+<span id="cb10-102"><a href="#cb10-102" tabindex="-1"></a><span class="co">#&gt;           &lt;num&gt;           &lt;num&gt;        &lt;num&gt;            &lt;num&gt;</span></span>
+<span id="cb10-103"><a href="#cb10-103" tabindex="-1"></a><span class="co">#&gt;  1: -0.11657070     -0.11657070 -0.088925309    -0.0843923762</span></span>
+<span id="cb10-104"><a href="#cb10-104" tabindex="-1"></a><span class="co">#&gt;  2:  0.07028408      0.07028408  0.049827855     0.0523436479</span></span>
+<span id="cb10-105"><a href="#cb10-105" tabindex="-1"></a><span class="co">#&gt;  3: -0.11069953     -0.11069953 -0.035647586    -0.0273251589</span></span>
+<span id="cb10-106"><a href="#cb10-106" tabindex="-1"></a><span class="co">#&gt;  4: -0.05331084     -0.05331084  0.015634460     0.0202535167</span></span>
+<span id="cb10-107"><a href="#cb10-107" tabindex="-1"></a><span class="co">#&gt;  5: -0.02132012     -0.02132012  0.005147733    -0.0019478808</span></span>
+<span id="cb10-108"><a href="#cb10-108" tabindex="-1"></a><span class="co">#&gt; ---                                                          </span></span>
+<span id="cb10-109"><a href="#cb10-109" tabindex="-1"></a><span class="co">#&gt; 53: -0.05770090     -0.05770090 -0.043305822    -0.0358783230</span></span>
+<span id="cb10-110"><a href="#cb10-110" tabindex="-1"></a><span class="co">#&gt; 54:  0.04815726      0.04815726 -0.011835631    -0.0097802943</span></span>
+<span id="cb10-111"><a href="#cb10-111" tabindex="-1"></a><span class="co">#&gt; 55: -0.07650664     -0.07650664 -0.048252337    -0.0373525396</span></span>
+<span id="cb10-112"><a href="#cb10-112" tabindex="-1"></a><span class="co">#&gt; 56: -0.03016432     -0.03016432 -0.001547314    -0.0018719076</span></span>
+<span id="cb10-113"><a href="#cb10-113" tabindex="-1"></a><span class="co">#&gt; 57:  0.01122444      0.01122444 -0.006076386     0.0003220944</span></span></code></pre></div>
 <p>The result table above shows the weights learned, one column per
 sampling method. We see that the first two columns (<code>*_full</code>)
 are identical, which means that the learned weights end up the same
@@ -677,36 +644,36 @@ the randomness:</p>
 same,</li>
 <li>and the random selection of batches was the same.</li>
 </ul>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" tabindex="-1"></a><span class="cf">if</span>(torch_available){</span>
-<span id="cb38-2"><a href="#cb38-2" tabindex="-1"></a>  <span class="co"># Check that benchmark ran successfully</span></span>
-<span id="cb38-3"><a href="#cb38-3" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">length</span>(result_list) <span class="sc">==</span> <span class="dv">4</span>)</span>
-<span id="cb38-4"><a href="#cb38-4" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">all</span>(<span class="fu">names</span>(result_list) <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;random_full&quot;</span>, <span class="st">&quot;stratified_full&quot;</span>, </span>
-<span id="cb38-5"><a href="#cb38-5" tabindex="-1"></a>                                            <span class="st">&quot;random_stoch&quot;</span>, <span class="st">&quot;stratified_stoch&quot;</span>)))</span>
-<span id="cb38-6"><a href="#cb38-6" tabindex="-1"></a>  </span>
-<span id="cb38-7"><a href="#cb38-7" tabindex="-1"></a>  <span class="co"># Verify full batching methods produce similar results</span></span>
-<span id="cb38-8"><a href="#cb38-8" tabindex="-1"></a>  w1 <span class="ot">&lt;-</span> result_list<span class="sc">$</span>random_full<span class="sc">$</span>weights</span>
-<span id="cb38-9"><a href="#cb38-9" tabindex="-1"></a>  w2 <span class="ot">&lt;-</span> result_list<span class="sc">$</span>stratified_full<span class="sc">$</span>weights</span>
-<span id="cb38-10"><a href="#cb38-10" tabindex="-1"></a>  weight_diff <span class="ot">&lt;-</span> <span class="fu">max</span>(<span class="fu">abs</span>(w1 <span class="sc">-</span> w2))</span>
-<span id="cb38-11"><a href="#cb38-11" tabindex="-1"></a>  </span>
-<span id="cb38-12"><a href="#cb38-12" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;Benchmark results:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb38-13"><a href="#cb38-13" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;  - All 4 sampling methods completed successfully</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb38-14"><a href="#cb38-14" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;  - Full batching weight difference:&quot;</span>, weight_diff, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb38-15"><a href="#cb38-15" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;  - (Small difference confirms randomness control)</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb38-16"><a href="#cb38-16" tabindex="-1"></a>  </span>
-<span id="cb38-17"><a href="#cb38-17" tabindex="-1"></a>  <span class="fu">stopifnot</span>(weight_diff <span class="sc">&lt;</span> <span class="fl">1e-3</span>)</span>
-<span id="cb38-18"><a href="#cb38-18" tabindex="-1"></a>}</span></code></pre></div>
-<pre><code>#&gt; Benchmark results:
-#&gt;   - All 4 sampling methods completed successfully
-#&gt;   - Full batching weight difference: 0 
-#&gt;   - (Small difference confirms randomness control)</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="cf">if</span>(torch_available){</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>  <span class="co"># Check that benchmark ran successfully</span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">length</span>(result_list) <span class="sc">==</span> <span class="dv">4</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">all</span>(<span class="fu">names</span>(result_list) <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;random_full&quot;</span>, <span class="st">&quot;stratified_full&quot;</span>, </span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>                                            <span class="st">&quot;random_stoch&quot;</span>, <span class="st">&quot;stratified_stoch&quot;</span>)))</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>  </span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>  <span class="co"># Verify full batching methods produce similar results</span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>  w1 <span class="ot">&lt;-</span> result_list<span class="sc">$</span>random_full<span class="sc">$</span>weights</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>  w2 <span class="ot">&lt;-</span> result_list<span class="sc">$</span>stratified_full<span class="sc">$</span>weights</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>  weight_diff <span class="ot">&lt;-</span> <span class="fu">max</span>(<span class="fu">abs</span>(w1 <span class="sc">-</span> w2))</span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>  </span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;Benchmark results:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;  - All 4 sampling methods completed successfully</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;  - Full batching weight difference:&quot;</span>, weight_diff, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;  - (Small difference confirms randomness control)</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a>  </span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a>  <span class="fu">stopifnot</span>(weight_diff <span class="sc">&lt;</span> <span class="fl">1e-3</span>)</span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a>}</span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a><span class="co">#&gt; Benchmark results:</span></span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a><span class="co">#&gt;   - All 4 sampling methods completed successfully</span></span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a><span class="co">#&gt;   - Full batching weight difference: 0 </span></span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a><span class="co">#&gt;   - (Small difference confirms randomness control)</span></span></code></pre></div>
 <p>Another result computed above is the number of evaluations of the
 loss function, which we examine in the code below.</p>
-<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" tabindex="-1"></a><span class="fu">do.call</span>(rbind, <span class="fu">lapply</span>(result_list, <span class="st">&quot;[[&quot;</span>, <span class="st">&quot;loss&quot;</span>))</span></code></pre></div>
-<pre><code>#&gt;                  evals zeros all_one_class
-#&gt; random_full         20     0             0
-#&gt; stratified_full     20     0             0
-#&gt; random_stoch      3120  2238          1097
-#&gt; stratified_stoch  3100  2089             0</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">do.call</span>(rbind, <span class="fu">lapply</span>(result_list, <span class="st">&quot;[[&quot;</span>, <span class="st">&quot;loss&quot;</span>))</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="co">#&gt;                  evals zeros all_one_class</span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="co">#&gt; random_full         20     0             0</span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co">#&gt; stratified_full     20     0             0</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co">#&gt; random_stoch      3120  2238          1097</span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="co">#&gt; stratified_stoch  3100  2089             0</span></span></code></pre></div>
 <p>The output above shows that the number of loss function evaluations
 is</p>
 <ul>
@@ -717,33 +684,33 @@ learn from).</li>
 </ul>
 <p>Next, we plot the history of AUM loss and 1-AUC values at each
 epoch.</p>
-<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" tabindex="-1"></a><span class="cf">if</span>(torch_available){</span>
-<span id="cb42-2"><a href="#cb42-2" tabindex="-1"></a>  (history_dt <span class="ot">&lt;-</span> <span class="fu">rbindlist</span>(<span class="fu">lapply</span>(result_list, <span class="st">&quot;[[&quot;</span>, <span class="st">&quot;history&quot;</span>)))</span>
-<span id="cb42-3"><a href="#cb42-3" tabindex="-1"></a>  (history_long <span class="ot">&lt;-</span> <span class="fu">melt</span>(</span>
-<span id="cb42-4"><a href="#cb42-4" tabindex="-1"></a>    history_dt,</span>
-<span id="cb42-5"><a href="#cb42-5" tabindex="-1"></a>    <span class="at">measure.vars=</span><span class="fu">measure</span>(set, measure, <span class="at">pattern=</span><span class="st">&quot;(.*).classif.(.*)&quot;</span>)</span>
-<span id="cb42-6"><a href="#cb42-6" tabindex="-1"></a>  )[</span>
-<span id="cb42-7"><a href="#cb42-7" tabindex="-1"></a>  , <span class="at">Set :=</span> <span class="fu">ifelse</span>(set<span class="sc">==</span><span class="st">&quot;train&quot;</span>, <span class="st">&quot;subtrain&quot;</span>, <span class="st">&quot;validation&quot;</span>)</span>
-<span id="cb42-8"><a href="#cb42-8" tabindex="-1"></a>  ][</span>
-<span id="cb42-9"><a href="#cb42-9" tabindex="-1"></a>  , <span class="fu">c</span>(<span class="st">&quot;sampling&quot;</span>,<span class="st">&quot;size&quot;</span>) <span class="sc">:=</span> <span class="fu">tstrsplit</span>(batching,<span class="st">&quot;_&quot;</span>)</span>
-<span id="cb42-10"><a href="#cb42-10" tabindex="-1"></a>  ][])</span>
-<span id="cb42-11"><a href="#cb42-11" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">require</span>(ggplot2)){</span>
-<span id="cb42-12"><a href="#cb42-12" tabindex="-1"></a>    <span class="fu">ggplot</span>()<span class="sc">+</span></span>
-<span id="cb42-13"><a href="#cb42-13" tabindex="-1"></a>      <span class="fu">theme_bw</span>()<span class="sc">+</span></span>
-<span id="cb42-14"><a href="#cb42-14" tabindex="-1"></a>      <span class="fu">geom_hline</span>(<span class="fu">aes</span>(</span>
-<span id="cb42-15"><a href="#cb42-15" tabindex="-1"></a>        <span class="at">yintercept=</span>value),</span>
-<span id="cb42-16"><a href="#cb42-16" tabindex="-1"></a>        <span class="at">color=</span><span class="st">&quot;grey&quot;</span>,</span>
-<span id="cb42-17"><a href="#cb42-17" tabindex="-1"></a>        <span class="at">data=</span><span class="fu">data.frame</span>(<span class="at">value=</span><span class="fl">0.5</span>, <span class="at">measure=</span><span class="st">&quot;invauc&quot;</span>))<span class="sc">+</span></span>
-<span id="cb42-18"><a href="#cb42-18" tabindex="-1"></a>      <span class="fu">theme</span>(<span class="at">text=</span><span class="fu">element_text</span>(<span class="at">size=</span><span class="dv">20</span>))<span class="sc">+</span></span>
-<span id="cb42-19"><a href="#cb42-19" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(</span>
-<span id="cb42-20"><a href="#cb42-20" tabindex="-1"></a>        epoch, value, <span class="at">color=</span>Set),</span>
-<span id="cb42-21"><a href="#cb42-21" tabindex="-1"></a>        <span class="at">linewidth=</span><span class="dv">1</span>,</span>
-<span id="cb42-22"><a href="#cb42-22" tabindex="-1"></a>        <span class="at">data=</span>history_long)<span class="sc">+</span></span>
-<span id="cb42-23"><a href="#cb42-23" tabindex="-1"></a>      <span class="fu">facet_grid</span>(measure <span class="sc">~</span> size <span class="sc">+</span> sampling, <span class="at">scales=</span><span class="st">&quot;free&quot;</span>, <span class="at">labeller=</span>label_both)<span class="sc">+</span></span>
-<span id="cb42-24"><a href="#cb42-24" tabindex="-1"></a>      <span class="fu">scale_y_log10</span>()</span>
-<span id="cb42-25"><a href="#cb42-25" tabindex="-1"></a>  }</span>
-<span id="cb42-26"><a href="#cb42-26" tabindex="-1"></a>}</span></code></pre></div>
-<pre><code>#&gt; Loading required package: ggplot2</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="cf">if</span>(torch_available){</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>  (history_dt <span class="ot">&lt;-</span> <span class="fu">rbindlist</span>(<span class="fu">lapply</span>(result_list, <span class="st">&quot;[[&quot;</span>, <span class="st">&quot;history&quot;</span>)))</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>  (history_long <span class="ot">&lt;-</span> <span class="fu">melt</span>(</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>    history_dt,</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>    <span class="at">measure.vars=</span><span class="fu">measure</span>(set, measure, <span class="at">pattern=</span><span class="st">&quot;(.*).classif.(.*)&quot;</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>  )[</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>  , <span class="at">Set :=</span> <span class="fu">ifelse</span>(set<span class="sc">==</span><span class="st">&quot;train&quot;</span>, <span class="st">&quot;subtrain&quot;</span>, <span class="st">&quot;validation&quot;</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>  ][</span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>  , <span class="fu">c</span>(<span class="st">&quot;sampling&quot;</span>,<span class="st">&quot;size&quot;</span>) <span class="sc">:=</span> <span class="fu">tstrsplit</span>(batching,<span class="st">&quot;_&quot;</span>)</span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>  ][])</span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">require</span>(ggplot2)){</span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>    <span class="fu">ggplot</span>()<span class="sc">+</span></span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>      <span class="fu">theme_bw</span>()<span class="sc">+</span></span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>      <span class="fu">geom_hline</span>(<span class="fu">aes</span>(</span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a>        <span class="at">yintercept=</span>value),</span>
+<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a>        <span class="at">color=</span><span class="st">&quot;grey&quot;</span>,</span>
+<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a>        <span class="at">data=</span><span class="fu">data.frame</span>(<span class="at">value=</span><span class="fl">0.5</span>, <span class="at">measure=</span><span class="st">&quot;invauc&quot;</span>))<span class="sc">+</span></span>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a>      <span class="fu">theme</span>(<span class="at">text=</span><span class="fu">element_text</span>(<span class="at">size=</span><span class="dv">20</span>))<span class="sc">+</span></span>
+<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(</span>
+<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a>        epoch, value, <span class="at">color=</span>Set),</span>
+<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a>        <span class="at">linewidth=</span><span class="dv">1</span>,</span>
+<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a>        <span class="at">data=</span>history_long)<span class="sc">+</span></span>
+<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a>      <span class="fu">facet_grid</span>(measure <span class="sc">~</span> size <span class="sc">+</span> sampling, <span class="at">scales=</span><span class="st">&quot;free&quot;</span>, <span class="at">labeller=</span>label_both)<span class="sc">+</span></span>
+<span id="cb13-24"><a href="#cb13-24" tabindex="-1"></a>      <span class="fu">scale_y_log10</span>()</span>
+<span id="cb13-25"><a href="#cb13-25" tabindex="-1"></a>  }</span>
+<span id="cb13-26"><a href="#cb13-26" tabindex="-1"></a>}</span>
+<span id="cb13-27"><a href="#cb13-27" tabindex="-1"></a><span class="co">#&gt; Loading required package: ggplot2</span></span></code></pre></div>
 <p><img role="img" aria-label src="data:image/png;base64,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" alt width="100%" /></p>
 <p>We see in the result figure above that</p>
 <ul>
@@ -759,50 +726,49 @@ expected.</p>
 </div>
 <div id="session-information" class="section level1">
 <h1>3. Session Information</h1>
-<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div>
-<pre><code>#&gt; R version 4.5.2 (2025-10-31 ucrt)
-#&gt; Platform: x86_64-w64-mingw32/x64
-#&gt; Running under: Windows 11 x64 (build 26200)
-#&gt; 
-#&gt; Matrix products: default
-#&gt;   LAPACK version 3.12.1
-#&gt; 
-#&gt; locale:
-#&gt; [1] LC_COLLATE=English_India.utf8  LC_CTYPE=English_India.utf8   
-#&gt; [3] LC_MONETARY=English_India.utf8 LC_NUMERIC=C                  
-#&gt; [5] LC_TIME=English_India.utf8    
-#&gt; 
-#&gt; time zone: Asia/Calcutta
-#&gt; tzcode source: internal
-#&gt; 
-#&gt; attached base packages:
-#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     
-#&gt; 
-#&gt; other attached packages:
-#&gt; [1] ggplot2_4.0.2          future_1.69.0          data.table_1.18.2.1   
-#&gt; [4] mlr3torchAUM_2025.9.23
-#&gt; 
-#&gt; loaded via a namespace (and not attached):
-#&gt;  [1] sass_0.4.10          listenv_0.10.0       digest_0.6.39       
-#&gt;  [4] magrittr_2.0.4       RColorBrewer_1.1-3   evaluate_1.0.5      
-#&gt;  [7] grid_4.5.2           fastmap_1.2.0        jsonlite_2.0.0      
-#&gt; [10] processx_3.8.6       backports_1.5.0      torch_0.16.3        
-#&gt; [13] ps_1.9.1             scales_1.4.0         coro_1.1.0          
-#&gt; [16] mlr3_1.5.0           mlr3measures_1.2.0   codetools_0.2-20    
-#&gt; [19] palmerpenguins_0.1.1 jquerylib_0.1.4      cli_3.6.5           
-#&gt; [22] rlang_1.1.7          crayon_1.5.3         future.apply_1.20.2 
-#&gt; [25] parallelly_1.46.1    bit64_4.6.0-1        remotes_2.5.0       
-#&gt; [28] withr_3.0.2          cachem_1.1.0         yaml_2.3.12         
-#&gt; [31] otel_0.2.0           mlr3pipelines_0.10.0 tools_4.5.2         
-#&gt; [34] parallel_4.5.2       uuid_1.2-2           checkmate_2.3.4     
-#&gt; [37] globals_0.19.0       curl_7.0.0           vctrs_0.7.1         
-#&gt; [40] R6_2.6.1             lifecycle_1.0.5      bit_4.6.0           
-#&gt; [43] mlr3misc_0.21.0      callr_3.7.6          bslib_0.10.0        
-#&gt; [46] gtable_0.3.6         glue_1.8.0           Rcpp_1.1.1          
-#&gt; [49] lgr_0.5.2            paradox_1.0.1        xfun_0.56           
-#&gt; [52] knitr_1.51           farver_2.1.2         htmltools_0.5.9     
-#&gt; [55] labeling_0.4.3       rmarkdown_2.30       compiler_4.5.2      
-#&gt; [58] S7_0.2.1             mlr3torch_0.3.3</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="co">#&gt; R version 4.5.2 (2025-10-31 ucrt)</span></span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="co">#&gt; Platform: x86_64-w64-mingw32/x64</span></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="co">#&gt; Running under: Windows 11 x64 (build 26200)</span></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a><span class="co">#&gt; Matrix products: default</span></span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a><span class="co">#&gt;   LAPACK version 3.12.1</span></span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a><span class="co">#&gt; locale:</span></span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a><span class="co">#&gt; [1] LC_COLLATE=English_India.utf8  LC_CTYPE=English_India.utf8   </span></span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a><span class="co">#&gt; [3] LC_MONETARY=English_India.utf8 LC_NUMERIC=C                  </span></span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a><span class="co">#&gt; [5] LC_TIME=English_India.utf8    </span></span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a><span class="co">#&gt; time zone: Asia/Calcutta</span></span>
+<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a><span class="co">#&gt; tzcode source: internal</span></span>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a><span class="co">#&gt; attached base packages:</span></span>
+<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
+<span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a><span class="co">#&gt; other attached packages:</span></span>
+<span id="cb14-21"><a href="#cb14-21" tabindex="-1"></a><span class="co">#&gt; [1] ggplot2_4.0.2       future_1.69.0       data.table_1.18.2.1</span></span>
+<span id="cb14-22"><a href="#cb14-22" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb14-23"><a href="#cb14-23" tabindex="-1"></a><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
+<span id="cb14-24"><a href="#cb14-24" tabindex="-1"></a><span class="co">#&gt;  [1] sass_0.4.10            listenv_0.10.0         digest_0.6.39         </span></span>
+<span id="cb14-25"><a href="#cb14-25" tabindex="-1"></a><span class="co">#&gt;  [4] magrittr_2.0.4         RColorBrewer_1.1-3     evaluate_1.0.5        </span></span>
+<span id="cb14-26"><a href="#cb14-26" tabindex="-1"></a><span class="co">#&gt;  [7] grid_4.5.2             fastmap_1.2.0          jsonlite_2.0.0        </span></span>
+<span id="cb14-27"><a href="#cb14-27" tabindex="-1"></a><span class="co">#&gt; [10] processx_3.8.6         backports_1.5.0        torch_0.16.3          </span></span>
+<span id="cb14-28"><a href="#cb14-28" tabindex="-1"></a><span class="co">#&gt; [13] ps_1.9.1               scales_1.4.0           coro_1.1.0            </span></span>
+<span id="cb14-29"><a href="#cb14-29" tabindex="-1"></a><span class="co">#&gt; [16] mlr3_1.5.0             codetools_0.2-20       mlr3measures_1.2.0    </span></span>
+<span id="cb14-30"><a href="#cb14-30" tabindex="-1"></a><span class="co">#&gt; [19] palmerpenguins_0.1.1   jquerylib_0.1.4        cli_3.6.5             </span></span>
+<span id="cb14-31"><a href="#cb14-31" tabindex="-1"></a><span class="co">#&gt; [22] rlang_1.1.7            crayon_1.5.3           parallelly_1.46.1     </span></span>
+<span id="cb14-32"><a href="#cb14-32" tabindex="-1"></a><span class="co">#&gt; [25] future.apply_1.20.2    bit64_4.6.0-1          withr_3.0.2           </span></span>
+<span id="cb14-33"><a href="#cb14-33" tabindex="-1"></a><span class="co">#&gt; [28] cachem_1.1.0           yaml_2.3.12            otel_0.2.0            </span></span>
+<span id="cb14-34"><a href="#cb14-34" tabindex="-1"></a><span class="co">#&gt; [31] mlr3pipelines_0.11.0   tools_4.5.2            parallel_4.5.2        </span></span>
+<span id="cb14-35"><a href="#cb14-35" tabindex="-1"></a><span class="co">#&gt; [34] uuid_1.2-2             checkmate_2.3.4        globals_0.19.0        </span></span>
+<span id="cb14-36"><a href="#cb14-36" tabindex="-1"></a><span class="co">#&gt; [37] vctrs_0.7.1            R6_2.6.1               lifecycle_1.0.5       </span></span>
+<span id="cb14-37"><a href="#cb14-37" tabindex="-1"></a><span class="co">#&gt; [40] bit_4.6.0              mlr3misc_0.21.0        callr_3.7.6           </span></span>
+<span id="cb14-38"><a href="#cb14-38" tabindex="-1"></a><span class="co">#&gt; [43] bslib_0.10.0           gtable_0.3.6           glue_1.8.0            </span></span>
+<span id="cb14-39"><a href="#cb14-39" tabindex="-1"></a><span class="co">#&gt; [46] Rcpp_1.1.1             lgr_0.5.2              paradox_1.0.1         </span></span>
+<span id="cb14-40"><a href="#cb14-40" tabindex="-1"></a><span class="co">#&gt; [49] xfun_0.56              knitr_1.51             farver_2.1.2          </span></span>
+<span id="cb14-41"><a href="#cb14-41" tabindex="-1"></a><span class="co">#&gt; [52] htmltools_0.5.9        labeling_0.4.3         rmarkdown_2.30        </span></span>
+<span id="cb14-42"><a href="#cb14-42" tabindex="-1"></a><span class="co">#&gt; [55] mlr3torchAUM_2025.9.23 compiler_4.5.2         S7_0.2.1              </span></span>
+<span id="cb14-43"><a href="#cb14-43" tabindex="-1"></a><span class="co">#&gt; [58] mlr3torch_0.3.3</span></span></code></pre></div>
 </div>
 
 
